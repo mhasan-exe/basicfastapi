@@ -11,6 +11,6 @@
             <small class="text-white"> BY {{post.id}}</small>
         </div>
 </div>
-<button type="button" onclick="alert('Hello World!')">Click Me</button>
-<a href="/posts/{{ post.id + 1 }}"><button type="button">Go to Next Post</button></a>
+<button type="button" class="btn btn-danger" onclick="alert('Hello World!')">Click Me</button>
+<a href="/posts/{{ post.id + 1 }}"><button type="button" class="btn btn-success">Go to Next Post</button></a>
 {% endblock %}
