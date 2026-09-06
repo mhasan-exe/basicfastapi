@@ -27,3 +27,6 @@ def get_post(request: Request, post_id: int):
     if not post:
         return {"error": "Post not found"}
     return templates.TemplateResponse(request, "post.html", {"post": post})
+@app.post("/submit")
+def input_post_number(request: Request):
+    return templates.TemplateResponse(request, "submit.html")

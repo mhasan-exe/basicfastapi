@@ -13,4 +13,12 @@
 </div>
 <button type="button" class="btn btn-danger" onclick="alert('Hello World!')">Click Me</button>
 <a href="/posts/{{ post.id + 1 }}"><button type="button" class="btn btn-success">Go to Next Post</button></a>
+
+<h1 class="display-2"> Write a Review </h1>
+<form action="/submit" method="post">
+    <div class="mb-3">
+        <label for="postId" class="form-label">Post ID</label>
+        <input type="text" class="form-control" id="postId" name="post_id" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
 {% endblock %}
