@@ -1,0 +1,16 @@
+{% extends "index.html" %}
+{% block content %}
+<div class="container">
+    <h1 class="display-1">Post</h1>
+    <div class="card text-bg-dark mb-3" style="max-width: 25rem;">
+        <div class="card-header">{{ post.title }}</div>
+        <div class="card-body">
+            <p class="card-text">{{ post.content }}</p>
+        </div>
+        <div class="card-footer">
+            <small class="text-white"> BY {{post.id}}</small>
+        </div>
+</div>
+<button type="button" onclick="alert('Hello World!')">Click Me</button>
+<a href="/posts/{{ post.id + 1 }}"><button type="button">Go to Next Post</button></a>
+{% endblock %}
