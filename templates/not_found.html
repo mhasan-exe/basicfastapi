@@ -1,0 +1,15 @@
+{% extends "index.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center p-5">
+                <h1 class="display-4 text-danger">404</h1>
+                <h2 class="h3 mb-3">Post not found</h2>
+                <p class="text-secondary mb-4">The post with ID {{ post_id }} does not exist.</p>
+                <a href="/" class="btn btn-primary">Back to home</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

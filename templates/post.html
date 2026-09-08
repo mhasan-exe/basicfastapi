@@ -1,24 +1,38 @@
 {% extends "index.html" %}
 {% block content %}
-<div class="container">
-    <h1 class="display-1">Post</h1>
-    <div class="card text-bg-dark mb-3" style="max-width: 25rem;">
-        <div class="card-header">{{ post.title }}</div>
-        <div class="card-body">
-            <p class="card-text">{{ post.content }}</p>
-        </div>
-        <div class="card-footer">
-            <small class="text-white"> BY {{post.id}}</small>
-        </div>
-</div>
-<button type="button" class="btn btn-danger" onclick="alert('Hello World!')">Click Me</button>
-<a href="/posts/{{ post.id + 1 }}"><button type="button" class="btn btn-success">Go to Next Post</button></a>
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-body p-4 p-lg-5">
+                <p class="text-uppercase text-primary fw-semibold mb-2">Post #{{ post.id }}</p>
+                <h1 class="display-6 mb-3">{{ post.title }}</h1>
+                <p class="lead text-secondary">{{ post.content }}</p>
 
-<h1 class="display-2"> Write a Review </h1>
-<form action="/submit" method="post">
-    <div class="mb-3">
-        <label for="postId" class="form-label">Post ID</label>
-        <input type="text" class="form-control" id="postId" name="post_id" required>
+                <div class="d-flex flex-wrap gap-2 mt-4">
+                    <a href="/" class="btn btn-outline-secondary">Back to home</a>
+                    {% if next_post_id %}
+                    <a href="/posts/{{ next_post_id }}" class="btn btn-primary">Next post</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
     </div>
-    <button type="submit" class="btn btn-primary">Submit</button>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-body p-4">
+                <h2 class="h4 mb-3">Leave a review</h2>
+                <form action="/submit" method="post">
+                    <div class="mb-3">
+                        <label for="postId" class="form-label">Post ID</label>
+                        <input type="number" class="form-control" id="postId" name="post_id" value="{{ post.id }}" min="1" required>
+                    </div>
+                    <button type="submit" class="btn btn-success">Submit review</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
