@@ -14,6 +14,11 @@ posts: list[dict] = [{
         "id": 2,
         "title": "Second Post",
         "content": "This is the second post."
+    },
+    {
+        "id":3,
+        "title":"Haaland",
+        "content": "never believe humans!"
     }
 ]
 
@@ -30,3 +35,4 @@ def get_post(request: Request, post_id: int):
 @app.post("/submit")
 def input_post_number(request: Request):
     return templates.TemplateResponse(request, "submit.html")
+
