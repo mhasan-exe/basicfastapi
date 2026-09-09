@@ -125,3 +125,6 @@ async def submit_review(request: Request):
         },
     )
 
+@app.get("/apikey")
+def returnkey(request: Request):
+    pass 
