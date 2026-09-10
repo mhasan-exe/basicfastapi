@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block content %}
+{% for endpoint in endpoints %}
+"{{ endpoint.name }}": {
+    "method": "{{ endpoint.method }}",
+    "url": "{{ endpoint.url }}",
+    "description": "{{ endpoint.description }}"
+}{% if not loop.last %},{% endif %}
+{% endfor %}
+{% endblock %}

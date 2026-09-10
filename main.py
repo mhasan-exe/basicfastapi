@@ -129,5 +129,13 @@ async def submit_review(request: Request):
 def returnkey(request: Request):
     return templates.TemplateResponse(
         request,
-        "api.html"
+        "api.html",
+        {"endpoints": [
+            {"name": "Homepage", "method": "GET", "url": "/", "description": "Displays the homepage with a list of posts."},
+            {"name": "Get Post Page", "method": "GET", "url": "/posts/{post_id}", "description": "Displays a specific post based on the provided post ID."},
+            {"name": "Submit Page", "method": "GET", "url": "/submit", "description": "Displays the form for submitting a review."},
+            {"name": "Submit Review", "method": "POST", "url": "/submit", "description": "Handles the submission of a review for a specific post."},
+            {"name": "API Key Endpoint", "method": "GET", "url": "/apikey", "description": "Returns a list of available API endpoints and their details."}
+        ]
+        }
     )
