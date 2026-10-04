@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Head-Coupled Parallax & Shadows</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #111; font-family: sans-serif; }
+        canvas { display: block; }
+        #video-container {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            width: 160px;
+            height: 120px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            z-index: 10;
+        }
+        video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        #loading {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 1.2rem;
+            pointer-events: none;
+        }
+    </style>
+    <!-- Three.js for 3D Graphics -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- MediaPipe for Face Tracking -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+</head>
+<body>
+
+    <div id="loading">Requesting camera access and loading AI models...</div>
+    <div id="video-container">
+        <video id="input_video" autoplay playsinline></video>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. THREE.JS 3D SCENE SETUP
+        // ==========================================
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.Fog(0x111111, 10, 50);
+
+        // Camera setup
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+        camera.position.set(0, 2, 8);
+
+        // Renderer setup with shadow maps enabled
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        document.body.appendChild(renderer.domElement);
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+        scene.add(ambientLight);
+
+        const spotlight = new THREE.SpotLight(0xffffff, 1.5);
+        spotlight.position.set(0, 10, 5);
+        spotlight.castShadow = true;
+        spotlight.shadow.mapSize.width = 1024;
+        spotlight.shadow.mapSize.height = 1024;
+        scene.add(spotlight);
+
+        // The Floor (receives shadows)
+        const planeGeo = new THREE.PlaneGeometry(100, 100);
+        const planeMat = new THREE.MeshStandardMaterial({ color: 0x444444, roughness: 0.1, metalness: 0.1 });
+        const plane = new THREE.Mesh(planeGeo, planeMat);
+        plane.rotation.x = -Math.PI / 2;
+        plane.receiveShadow = true;
+        scene.add(plane);
+
+        // Center Object (to give the scene depth)
+        const cubeGeo = new THREE.BoxGeometry(2, 2, 2);
+        const cubeMat = new THREE.MeshStandardMaterial({ color: 0x00ff88, roughness: 0.4 });
+        const cube = new THREE.Mesh(cubeGeo, cubeMat);
+        cube.position.set(0, 1, 0);
+        cube.castShadow = true;
+        cube.receiveShadow = true;
+        scene.add(cube);
+
+        // "Player/User" Object (represents your head, casts your shadow)
+        const userGeo = new THREE.SphereGeometry(0.5, 32, 32);
+        const userMat = new THREE.MeshStandardMaterial({ color: 0xff4444, emissive: 0x440000 });
+        const userAvatar = new THREE.Mesh(userGeo, userMat);
+        userAvatar.castShadow = true;
+        scene.add(userAvatar);
+
+        // ==========================================
+        // 2. MEDIAPIPE FACE TRACKING SETUP
+        // ==========================================
+        const videoElement = document.getElementById('input_video');
+        const loadingText = document.getElementById('loading');
+
+        // Target coordinates for smooth interpolation (Lerp)
+        let targetX = 0;
+        let targetY = 2;
+
+        const faceMesh = new FaceMesh({locateFile: (file) => {
+            return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
+        }});
+
+        faceMesh.setOptions({
+            maxNumFaces: 1,
+            refineLandmarks: true,
+            minDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5
+        });
+
+        faceMesh.onResults((results) => {
+            loadingText.style.display = 'none'; // Hide loading text once tracking starts
+
+            if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+                // Get the nose tip landmark (index 1)
+                const nose = results.multiFaceLandmarks[0][1]; 
+                
+                // Map the normalized webcame coordinates (0.0 to 1.0) to our 3D space coordinates
+                // We multiply by factors to determine how extreme the 3D movement is
+                targetX = (nose.x - 0.5) * -15; // Invert X for mirroring
+                targetY = (nose.y - 0.5) * -10 + 2; 
+            }
+        });
+
+        const cameraFeed = new Camera(videoElement, {
+            onFrame: async () => {
+                await faceMesh.send({image: videoElement});
+            },
+            width: 320,
+            height: 240
+        });
+        cameraFeed.start();
+
+        // ==========================================
+        // 3. ANIMATION & RENDER LOOP
+        // ==========================================
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Smoothly move the Three.js camera toward the tracked face coordinates
+            camera.position.x += (targetX - camera.position.x) * 0.1;
+            camera.position.y += (targetY - camera.position.y) * 0.1;
+            
+            // Keep the camera looking at the center object to create the parallax effect
+            camera.lookAt(cube.position);
+
+            // Move the avatar sphere to match the camera position (slightly in front)
+            // This ensures it casts a shadow exactly from where you are viewing
+            userAvatar.position.set(camera.position.x, camera.position.y - 1, camera.position.z - 2);
+
+            // Slowly rotate the center cube for visual interest
+            cube.rotation.y += 0.01;
+            cube.rotation.x += 0.005;
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // Handle window resizing
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
