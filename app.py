@@ -1,7 +1,7 @@
 import customtkinter as ctk
 
 app = ctk.CTk()
-app.geometry("400x300")
+app.geometry("500x300")
 
 def button_callback():
     print("button cicked!")
