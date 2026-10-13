@@ -29,3 +29,11 @@ def submit_form(request: Request):
         request,
         {"page_title": "Form Submitted", "name": name, "email": email, "message": message},
     )
+
+@app.get("/notfound")
+def not_found(request: Request):
+    return templates.TemplateResponse(
+        "not_found.html",
+        request,
+        {"page_title": "Page Not Found"},
+    )
